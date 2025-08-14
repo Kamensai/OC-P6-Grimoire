@@ -1,7 +1,24 @@
+require('dotenv').config();
+
 const express = require('express');
+const mongoose = require('mongoose');
+
 
 const app = express();
 
+// Paramètres de connexion à MongoDB
+const username = process.env.MONGO_USER;
+const password = process.env.MONGO_PASSWORD;
+const dbName = process.env.MONGO_DB;
+
+// Connexion à MongoDB
+mongoose.connect(`mongodb+srv://${username}:${password}@cluster0.jwvhqej.mongodb.net/${dbName}?retryWrites=true&w=majority&appName=Cluster0`,
+  { useNewUrlParser: true,
+    useUnifiedTopology: true })
+  .then(() => console.log('Connexion à MongoDB réussie !'))
+  .catch(() => console.log('Connexion à MongoDB échouée !'));
+
+// Middleware CORS
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content, Accept, Content-Type, Authorization');
@@ -9,7 +26,17 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use('/api/books', (req, res, next) => {
+//app.use(express.json());
+
+/*
+app.post('/api/books', (req, res, next) => {
+  console.log(req.body);
+  res.status(201).json({
+    message: 'Objet créé !'
+  });
+});
+*/
+app.get('/api/books', (req, res, next) => {
   const books = [
     {
       userId: 'oeihfzeoi',
