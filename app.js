@@ -2,8 +2,23 @@ const express = require('express');
 
 const app = express();
 
-app.use((req, res ) => {
-    res.send('Hello World');
+app.use((req, res, next) => {
+    console.log("reçus");
+    next();
+});
+
+app.use((req, res, next) => {
+  res.status(201);
+  next();
+});
+
+app.use((req, res, next ) => {
+    res.json('Hello World');
+    next();
+});
+
+app.use((req, res, next) => {
+  console.log('Réponse envoyée avec succès !');
 });
 
 module.exports = app;
