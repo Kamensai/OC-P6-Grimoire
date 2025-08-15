@@ -11,6 +11,8 @@ const username = process.env.MONGO_USER;
 const password = process.env.MONGO_PASSWORD;
 const dbName = process.env.MONGO_DB;
 
+const app = express();
+
 // Connexion à MongoDB
 mongoose.connect(`mongodb+srv://${username}:${password}@cluster0.jwvhqej.mongodb.net/${dbName}?retryWrites=true&w=majority&appName=Cluster0`,
   { useNewUrlParser: true,
@@ -18,7 +20,7 @@ mongoose.connect(`mongodb+srv://${username}:${password}@cluster0.jwvhqej.mongodb
   .then(() => console.log('Connexion à MongoDB réussie !'))
   .catch(() => console.log('Connexion à MongoDB échouée !'));
 
-  const app = express();
+app.use(express.json());
 
 // Middleware CORS
 app.use((req, res, next) => {
@@ -28,7 +30,7 @@ app.use((req, res, next) => {
   next();
 });
 
-//app.use(express.json());
+
 
 app.use('/api/books', booksRoutes);
 //app.use('/api/auth', usersRoutes);

@@ -38,7 +38,8 @@ exports.createBook = (req, res, next) => {
 exports.rateBook = async (req, res, next) => {
     try {
         const bookId = req.params.id;
-        const { userId, rating } = req.body;
+        const userId  = req.auth.body;
+        const rating = req.body.rating;
 
         // Check valid rating
         if (!rating || rating < 0 || rating > 5) {
