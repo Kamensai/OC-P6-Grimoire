@@ -1,4 +1,4 @@
-// Gestion de la logique de l'application du model Book
+// Gestion de la logique de l'application du model User
 
 const User = require('../models/User');
 
