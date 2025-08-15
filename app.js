@@ -3,8 +3,8 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 
-
-const app = express();
+const booksRoutes = require('./routes/book');
+const usersRoutes = require('./routes/user');
 
 // Paramètres de connexion à MongoDB
 const username = process.env.MONGO_USER;
@@ -18,6 +18,8 @@ mongoose.connect(`mongodb+srv://${username}:${password}@cluster0.jwvhqej.mongodb
   .then(() => console.log('Connexion à MongoDB réussie !'))
   .catch(() => console.log('Connexion à MongoDB échouée !'));
 
+  const app = express();
+
 // Middleware CORS
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -28,14 +30,10 @@ app.use((req, res, next) => {
 
 //app.use(express.json());
 
+app.use('/api/books', booksRoutes);
+//app.use('/api/auth', usersRoutes);
+
 /*
-app.post('/api/books', (req, res, next) => {
-  console.log(req.body);
-  res.status(201).json({
-    message: 'Objet créé !'
-  });
-});
-*/
 app.get('/api/books', (req, res, next) => {
   const books = [
     {
@@ -71,5 +69,6 @@ app.get('/api/books', (req, res, next) => {
   ];
   res.status(200).json(books);
 });
+*/
 
 module.exports = app;
