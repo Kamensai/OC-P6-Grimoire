@@ -33,7 +33,7 @@ app.use((req, res, next) => {
 
 
 app.use('/api/books', booksRoutes);
-//app.use('/api/auth', usersRoutes);
+app.use('/api/auth', usersRoutes);
 
 /*
 app.get('/api/books', (req, res, next) => {
