@@ -3,6 +3,7 @@
 require('dotenv').config();
 
 const RANDOM_TOKEN_SECRET = process.env.RANDOM_TOKEN_SECRET;
+console.log(RANDOM_TOKEN_SECRET);
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
