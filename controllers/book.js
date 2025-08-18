@@ -42,7 +42,7 @@ exports.createBook = (req, res, next) => {
 exports.rateBook = async (req, res, next) => {
     try {
         const bookId = req.params.id;
-        const userId  = req.auth.body;
+        const userId  = req.auth.userId;
         const rating = req.body.rating;
 
         // Check valid rating
@@ -66,19 +66,35 @@ exports.rateBook = async (req, res, next) => {
         book.ratings.push({ userId, grade: rating });
 
         // update average rating
-        book.averageRating = book.ratings.reduce((sum, r) => sum + r.grade, 0) / book.ratings.length;
+        book.averageRating = Math.round((book.ratings.reduce((sum, r) => sum + r.grade, 0) / book.ratings.length) * 100) / 100;
 
         await book.save();
-
-        res.status(201).json({ message: 'Livre noté avec succès !', averageRating: book.averageRating });
+        // renvoyer le livre avec id à la racine
+        const bookResponse = book.toObject(); // transforme en JS object
+        bookResponse.id = bookResponse._id;    // ajoute id
+        res.status(201).json(bookResponse);    // renvoie directement le livre
     } catch (error) {
         res.status(500).json({ error: 'Erreur serveur : ' + error.message });
     }
 };
 
 exports.updateBook = (req, res, next) => {
-    Book.updateOne({ _id: req.params.id }, { ...req.body, _id: req.params.id })
-        .then(() => res.status(200).json({ message: 'Book updated successfully!' }))
+    const bookObject = req.file ? {
+        ...JSON.parse(req.body.book),
+        imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
+    } : { ...req.body };
+
+    delete bookObject.userId;
+    Book.findOne({ _id: req.params.id })
+        .then(book => {
+            if (book.userId != req.auth.userId) {
+                res.status(401).json({ message: 'Not authorized' });
+            } else {
+                Book.updateOne({ _id: req.params.id }, { ...bookObject, _id: req.params.id })
+                .then(() => res.status(200).json({ message: 'Book updated successfully!' }))
+                .catch(error => res.status(401).json({ error }));
+            }             
+        })
         .catch(error => res.status(400).json({ error }));
 };
 
