@@ -3,7 +3,7 @@ const sharp = require('sharp');
 const path = require('path');
 const fs = require('fs');
 
-// On ne stocke plus sur le disque, mais en mémoire
+// We no longer store on disk, but in memory
 const storage = multer.memoryStorage();
 
 const upload = multer({ storage: storage }).single('image');
@@ -11,7 +11,8 @@ const upload = multer({ storage: storage }).single('image');
 const uploadAndConvert = async (req, res, next) => {
     upload(req, res, async (err) => {
         if (err) return res.status(400).json({ error: err.message });
-        if (!req.file) return res.status(400).json({ error: 'No file uploaded!' });
+        // If no file is uploaded, continue (useful for PUT requests)
+        if (!req.file) return next();
 
         try {
             const timestamp = Date.now();
@@ -19,12 +20,12 @@ const uploadAndConvert = async (req, res, next) => {
             const outputFilename = `${nameWithoutExt}-${timestamp}.webp`;
             const outputPath = path.join('images', outputFilename);
 
-            // Sharp prend le buffer en entrée et écrit directement en WebP
+            // Sharp takes the buffer as input and writes directly in WebP format
             await sharp(req.file.buffer)
-                .webp({ quality: 80 }) // compression
+                .webp({ quality: 80 })
                 .toFile(outputPath);
 
-            // On remplace les infos du fichier pour le reste du traitement
+             // Replace file info for further processing
             req.file.filename = outputFilename;
             req.file.path = outputPath;
 
