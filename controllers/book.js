@@ -1,6 +1,7 @@
-// Gestion de la logique de l'application du model Book
+// Handles the business logic for the Book model
 
 const Book = require('../models/Book');
+const User = require('../models/User');
 const fs = require('fs');
 
 exports.getAllBooks = (req, res, next) => {
@@ -23,21 +24,31 @@ exports.getTop3RatingsBooks = (req, res, next) => {
         .catch(error => res.status(400).json({ error }));
 }
 
-exports.createBook = (req, res, next) => {
-    const bookObject = JSON.parse(req.body.book);
-    delete bookObject._id;
-    delete bookObject.userId;
+exports.createBook = async (req, res, next) => {
+    try {
+        const bookObject = JSON.parse(req.body.book);
+        delete bookObject._id;
+        delete bookObject.userId;
 
-    const book = new Book({
-        ...bookObject,
-        userId: req.auth.userId,
-        imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
-    });
+        const user = await User.findOne({ _id: req.auth.userId });
+        if (!user) {
+            return res.status(404).json({ error: 'Utilisateur non rencontré.' });
+        }
 
-    book.save()
-        .then(() => res.status(201).json({ message: 'Livre enregistré !' }))
-        .catch(error => {
-            res.status(400).json({ error })});
+        const book = new Book({
+            ...bookObject,
+            userId: req.auth.userId,
+            imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
+        });
+
+        book.save()
+            .then(() => res.status(201).json({ message: 'Livre enregistré !' }))
+            .catch(error => {
+                res.status(400).json({ error })});
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({ error });
+    }
 };
 
 exports.rateBook = async (req, res, next) => {
@@ -45,6 +56,11 @@ exports.rateBook = async (req, res, next) => {
         const bookId = req.params.id;
         const userId  = req.auth.userId;
         const rating = req.body.rating;
+
+        const user = await User.findOne({ _id: req.auth.userId });
+        if (!user) {
+            return res.status(404).json({ error: 'Utilisateur non rencontré.' });
+        }
 
         // Check valid rating
         if (!rating || rating < 0 || rating > 5) {
@@ -70,10 +86,14 @@ exports.rateBook = async (req, res, next) => {
         book.averageRating = Math.round((book.ratings.reduce((sum, r) => sum + r.grade, 0) / book.ratings.length) * 100) / 100;
 
         await book.save();
-        // renvoyer le livre avec id à la racine
-        const bookResponse = book.toObject(); // transforme en JS object
-        bookResponse.id = bookResponse._id;    // ajoute id
-        res.status(201).json(bookResponse);    // renvoie directement le livre
+
+        // return the book with id at the root
+        // convert to JS object
+        const bookResponse = book.toObject(); 
+        // add id field
+        bookResponse.id = bookResponse._id;   
+        
+        res.status(201).json(bookResponse);   
     } catch (error) {
         res.status(500).json({ error: 'Erreur serveur : ' + error.message });
     }
@@ -91,10 +111,10 @@ exports.updateBook = (req, res, next) => {
             if (!book) return res.status(404).json({ message: 'Book not found' });
 
             if (book.userId != req.auth.userId) {
-                return res.status(401).json({ message: 'Not authorized' });
+                return res.status(403).json({ message: 'Unauthorized Request' });
             }
 
-            // Si une nouvelle image est uploadée, supprimer l'ancienne
+            // If new image uploaded, delete old image
             if (req.file && book.imageUrl) {
                 const filename = book.imageUrl.split('/images/')[1];
                 fs.unlink(`images/${filename}`, err => {
