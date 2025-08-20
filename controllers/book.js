@@ -1,4 +1,4 @@
-// Handles the business logic for the Book model
+// Handles the Application logic for the Book model
 
 const Book = require('../models/Book');
 const User = require('../models/User');
@@ -32,7 +32,7 @@ exports.createBook = async (req, res, next) => {
 
         const user = await User.findOne({ _id: req.auth.userId });
         if (!user) {
-            return res.status(404).json({ error: 'Utilisateur non rencontré.' });
+            return res.status(404).json({ error: 'User not found.' });
         }
 
         const book = new Book({
@@ -42,11 +42,10 @@ exports.createBook = async (req, res, next) => {
         });
 
         book.save()
-            .then(() => res.status(201).json({ message: 'Livre enregistré !' }))
+            .then(() => res.status(201).json({ message: 'Book created successfully !' }))
             .catch(error => {
                 res.status(400).json({ error })});
         } catch (error) {
-            console.log(error);
             res.status(500).json({ error });
     }
 };
@@ -59,18 +58,18 @@ exports.rateBook = async (req, res, next) => {
 
         const user = await User.findOne({ _id: req.auth.userId });
         if (!user) {
-            return res.status(404).json({ error: 'Utilisateur non rencontré.' });
+            return res.status(404).json({ error: 'User not found.' });
         }
 
         // Check valid rating
         if (!rating || rating < 0 || rating > 5) {
-            return res.status(400).json({ error: 'La note doit être comprise entre 0 et 5.' });
+            return res.status(400).json({ error: 'Rating must be between 0 and 5.' });
         }
 
         // Get the book if it exists
         const book = await Book.findOne({ _id: bookId });
         if (!book) {
-            return res.status(404).json({ error: 'Livre non trouvé.' });
+            return res.status(404).json({ error: 'Book not found.' });
         }
 
         // Check if user already rated
@@ -95,7 +94,7 @@ exports.rateBook = async (req, res, next) => {
         
         res.status(201).json(bookResponse);   
     } catch (error) {
-        res.status(500).json({ error: 'Erreur serveur : ' + error.message });
+        res.status(500).json({ error: 'Error on server : ' + error.message });
     }
 };
 
@@ -118,7 +117,7 @@ exports.updateBook = (req, res, next) => {
             if (req.file && book.imageUrl) {
                 const filename = book.imageUrl.split('/images/')[1];
                 fs.unlink(`images/${filename}`, err => {
-                    if (err) console.error('Erreur suppression ancienne image:', err);
+                    if (err) console.error('Error deleting image:', err);
                 });
             } 
 

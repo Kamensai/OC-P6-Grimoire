@@ -7,19 +7,19 @@ const path = require('path');
 const booksRoutes = require('./routes/book');
 const usersRoutes = require('./routes/user');
 
-// Paramètres de connexion à MongoDB
+// Connection parameters to MongoDB
 const username = process.env.MONGO_USER;
 const password = process.env.MONGO_PASSWORD;
 const dbName = process.env.MONGO_DB;
 
 const app = express();
 
-// Connexion à MongoDB
+// Connection to MongoDB
 mongoose.connect(`mongodb+srv://${username}:${password}@cluster0.jwvhqej.mongodb.net/${dbName}?retryWrites=true&w=majority&appName=Cluster0`,
   { useNewUrlParser: true,
     useUnifiedTopology: true })
-  .then(() => console.log('Connexion à MongoDB réussie !'))
-  .catch(() => console.log('Connexion à MongoDB échouée !'));
+  .then(() => console.log('Connection to MongoDB successful !'))
+  .catch(() => console.log('Connection to MongoDB failed !'));
 
 app.use(express.json());
 
