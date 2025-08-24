@@ -11,8 +11,15 @@ const upload = multer({ storage: storage }).single('image');
 const uploadAndConvert = async (req, res, next) => {
     upload(req, res, async (err) => {
         if (err) return res.status(400).json({ error: err.message });
+
         // If no file is uploaded, continue (useful for PUT requests)
         if (!req.file) return next();
+
+        // Check allowed file types
+        const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+        if (!allowedTypes.includes(req.file.mimetype)) {
+            return res.status(400).json({ error: 'Only PNG, JPEG and JPG files are allowed.' });
+        }
 
         try {
             const timestamp = Date.now();
