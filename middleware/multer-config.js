@@ -6,6 +6,8 @@ const fs = require('fs');
 // We no longer store on disk, but in memory
 const storage = multer.memoryStorage();
 
+const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+
 const upload = multer({ storage: storage }).single('image');
 
 const uploadAndConvert = async (req, res, next) => {
@@ -16,7 +18,6 @@ const uploadAndConvert = async (req, res, next) => {
         if (!req.file) return next();
 
         // Check allowed file types
-        const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg'];
         if (!allowedTypes.includes(req.file.mimetype)) {
             return res.status(400).json({ error: 'Only PNG, JPEG and JPG files are allowed.' });
         }
